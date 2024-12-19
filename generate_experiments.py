@@ -85,7 +85,7 @@ for cluster in tqdm(cluster_catalog):
     dec_min = dec - 0.2
     dec_max = dec + 0.2
 
-    if isinstance(c, np.float64):
+    if not isinstance(c, np.float64):
         c = 4.0
 
     halo_mass_summary["log10MDelta"] = log10mass
@@ -205,7 +205,7 @@ for cluster in tqdm(cluster_catalog):
     dec_min = dec - 0.2
     dec_max = dec + 0.2
 
-    if isinstance(c, np.float64):
+    if not isinstance(c, np.float64):
         c = 4.0
 
     halo_mass_summary["log10MDelta"] = log10mass
