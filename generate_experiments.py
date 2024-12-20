@@ -12,53 +12,6 @@ __name__ = "NcContext"
 ncm.cfg_init()
 ncm.cfg_set_log_handler(lambda msg: sys.stdout.write(msg) and sys.stdout.flush())
 
-
-# ## Setup Model Set
-#
-# Here we generate the model set used for the analysis of the clusters.
-# We define the cosmology using the WMAP Year 9 results.
-cosmo = nc.HICosmoDEXcdm()
-
-cosmo.params_set_default_ftype()
-cosmo.omega_x2omega_k()
-cosmo["H0"] = 69.7
-cosmo["Omegab"] = 0.0464
-cosmo["Omegac"] = 0.235
-cosmo["w"] = -1.0
-cosmo["Omegak"] = 0.00
-
-prim = nc.HIPrimPowerLaw.new()
-prim["ln10e10ASA"] = 3.02745
-prim["n_SA"] = 0.9660
-
-reion = nc.HIReionCamb.new()
-
-cosmo.param_set_desc("H0", {"fit": False})
-cosmo.param_set_desc("Omegac", {"fit": False})
-cosmo.param_set_desc("Omegab", {"fit": False})
-cosmo.param_set_desc("w", {"fit": False})
-cosmo.param_set_desc("Omegak", {"fit": False})
-prim.param_set_desc("ln10e10ASA", {"fit": False})
-prim.param_set_desc("n_SA", {"fit": False})
-reion.param_set_desc("z_re", {"fit": False})
-
-cosmo.add_submodel(prim)
-cosmo.add_submodel(reion)
-
-dist = nc.Distance.new(6.0)
-halo_mass_summary = nc.HaloCMParam.new(nc.HaloMassSummaryMassDef.CRITICAL, 200.0)
-density_profile = nc.HaloDensityProfileNFW.new(halo_mass_summary)
-surface_mass_density = nc.WLSurfaceMassDensity.new(dist)
-halo_position = nc.HaloPosition.new(dist)
-
-surface_mass_density.prepare(cosmo)
-halo_position.prepare(cosmo)
-
-halo_mass_summary.param_set_desc("log10MDelta", {"fit": True})
-halo_position.param_set_desc("ra", {"fit": True})
-halo_position.param_set_desc("dec", {"fit": True})
-
-
 # ## Load cluster catalog and bin definitions
 cluster_catalog = Table.read("hamana_clusters.fits")
 pz_bins = Table.read("pz/s16a_frankenz_bins.fits")
@@ -74,6 +27,51 @@ max_radius = 3.0
 # These are then serialized into experiment files which can either be loaded by and used by custom
 # python scripts or by the numcosmo CLI app.
 for cluster in tqdm(cluster_catalog):
+    # ## Setup Model Set
+    #
+    # Here we generate the model set used for the analysis of the clusters.
+    # We define the cosmology using the WMAP Year 9 results.
+    cosmo = nc.HICosmoDEXcdm()
+
+    cosmo.params_set_default_ftype()
+    cosmo.omega_x2omega_k()
+    cosmo["H0"] = 69.7
+    cosmo["Omegab"] = 0.0464
+    cosmo["Omegac"] = 0.235
+    cosmo["w"] = -1.0
+    cosmo["Omegak"] = 0.00
+
+    prim = nc.HIPrimPowerLaw.new()
+    prim["ln10e10ASA"] = 3.02745
+    prim["n_SA"] = 0.9660
+
+    reion = nc.HIReionCamb.new()
+
+    cosmo.param_set_desc("H0", {"fit": False})
+    cosmo.param_set_desc("Omegac", {"fit": False})
+    cosmo.param_set_desc("Omegab", {"fit": False})
+    cosmo.param_set_desc("w", {"fit": False})
+    cosmo.param_set_desc("Omegak", {"fit": False})
+    prim.param_set_desc("ln10e10ASA", {"fit": False})
+    prim.param_set_desc("n_SA", {"fit": False})
+    reion.param_set_desc("z_re", {"fit": False})
+
+    cosmo.add_submodel(prim)
+    cosmo.add_submodel(reion)
+
+    dist = nc.Distance.new(6.0)
+    halo_mass_summary = nc.HaloCMParam.new(nc.HaloMassSummaryMassDef.CRITICAL, 200.0)
+    density_profile = nc.HaloDensityProfileNFW.new(halo_mass_summary)
+    surface_mass_density = nc.WLSurfaceMassDensity.new(dist)
+    halo_position = nc.HaloPosition.new(dist)
+
+    surface_mass_density.prepare(cosmo)
+    halo_position.prepare(cosmo)
+
+    halo_mass_summary.param_set_desc("log10MDelta", {"fit": True})
+    halo_position.param_set_desc("ra", {"fit": True})
+    halo_position.param_set_desc("dec", {"fit": True})
+
     ra = cluster["ra"]
     dec = cluster["dec"]
     z = cluster["z_cluster"]
@@ -95,9 +93,9 @@ for cluster in tqdm(cluster_catalog):
     halo_position["dec"] = dec
     halo_position["z"] = z
 
-    halo_position.param_set_desc("ra", {"lower-bound": ra_min, "upper-bound": ra_max})
+    halo_position.param_set_desc("ra", {"lower-bound": float(ra_min), "upper-bound": float(ra_max)})
     halo_position.param_set_desc(
-        "dec", {"lower-bound": dec_min, "upper-bound": dec_max}
+        "dec", {"lower-bound": float(dec_min), "upper-bound": float(dec_max)}
     )
 
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
@@ -199,6 +197,51 @@ for cluster in tqdm(cluster_catalog):
 # These are then serialized into experiment files which can either be loaded by and used
 # by custom python scripts or by the numcosmo CLI app.
 for cluster in tqdm(cluster_catalog):
+    # ## Setup Model Set
+    #
+    # Here we generate the model set used for the analysis of the clusters.
+    # We define the cosmology using the WMAP Year 9 results.
+    cosmo = nc.HICosmoDEXcdm()
+
+    cosmo.params_set_default_ftype()
+    cosmo.omega_x2omega_k()
+    cosmo["H0"] = 69.7
+    cosmo["Omegab"] = 0.0464
+    cosmo["Omegac"] = 0.235
+    cosmo["w"] = -1.0
+    cosmo["Omegak"] = 0.00
+
+    prim = nc.HIPrimPowerLaw.new()
+    prim["ln10e10ASA"] = 3.02745
+    prim["n_SA"] = 0.9660
+
+    reion = nc.HIReionCamb.new()
+
+    cosmo.param_set_desc("H0", {"fit": False})
+    cosmo.param_set_desc("Omegac", {"fit": False})
+    cosmo.param_set_desc("Omegab", {"fit": False})
+    cosmo.param_set_desc("w", {"fit": False})
+    cosmo.param_set_desc("Omegak", {"fit": False})
+    prim.param_set_desc("ln10e10ASA", {"fit": False})
+    prim.param_set_desc("n_SA", {"fit": False})
+    reion.param_set_desc("z_re", {"fit": False})
+
+    cosmo.add_submodel(prim)
+    cosmo.add_submodel(reion)
+
+    dist = nc.Distance.new(6.0)
+    halo_mass_summary = nc.HaloCMParam.new(nc.HaloMassSummaryMassDef.CRITICAL, 200.0)
+    density_profile = nc.HaloDensityProfileNFW.new(halo_mass_summary)
+    surface_mass_density = nc.WLSurfaceMassDensity.new(dist)
+    halo_position = nc.HaloPosition.new(dist)
+
+    surface_mass_density.prepare(cosmo)
+    halo_position.prepare(cosmo)
+
+    halo_mass_summary.param_set_desc("log10MDelta", {"fit": True})
+    halo_position.param_set_desc("ra", {"fit": True})
+    halo_position.param_set_desc("dec", {"fit": True})
+
     ra = cluster["ra"]
     dec = cluster["dec"]
     z = cluster["z_cluster"]
@@ -220,9 +263,9 @@ for cluster in tqdm(cluster_catalog):
     halo_position["dec"] = dec
     halo_position["z"] = z
 
-    halo_position.param_set_desc("ra", {"lower-bound": ra_min, "upper-bound": ra_max})
+    halo_position.param_set_desc("ra", {"lower-bound": float(ra_min), "upper-bound": float(ra_max)})
     halo_position.param_set_desc(
-        "dec", {"lower-bound": dec_min, "upper-bound": dec_max}
+        "dec", {"lower-bound": float(dec_min), "upper-bound": float(dec_max)}
     )
 
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
