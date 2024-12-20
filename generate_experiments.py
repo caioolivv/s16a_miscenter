@@ -95,6 +95,11 @@ for cluster in tqdm(cluster_catalog):
     halo_position["dec"] = dec
     halo_position["z"] = z
 
+    halo_position.param_set_desc("ra", {"lower-bound": ra_min, "upper-bound": ra_max})
+    halo_position.param_set_desc(
+        "dec", {"lower-bound": dec_min, "upper-bound": dec_max}
+    )
+
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
     galaxy_true_redshift = nc.GalaxySDTrueRedshiftLSSTSRD.new()
     galaxy_redshift_obs = nc.GalaxySDObsRedshiftGauss.new(galaxy_true_redshift)
@@ -214,6 +219,11 @@ for cluster in tqdm(cluster_catalog):
     halo_position["ra"] = ra
     halo_position["dec"] = dec
     halo_position["z"] = z
+
+    halo_position.param_set_desc("ra", {"lower-bound": ra_min, "upper-bound": ra_max})
+    halo_position.param_set_desc(
+        "dec", {"lower-bound": dec_min, "upper-bound": dec_max}
+    )
 
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
     galaxy_redshift_obs = nc.GalaxySDObsRedshiftPz.new()
