@@ -93,7 +93,9 @@ for cluster in tqdm(cluster_catalog):
     halo_position["dec"] = dec
     halo_position["z"] = z
 
-    halo_position.param_set_desc("ra", {"lower-bound": float(ra_min), "upper-bound": float(ra_max)})
+    halo_position.param_set_desc(
+        "ra", {"lower-bound": float(ra_min), "upper-bound": float(ra_max)}
+    )
     halo_position.param_set_desc(
         "dec", {"lower-bound": float(dec_min), "upper-bound": float(dec_max)}
     )
@@ -263,7 +265,9 @@ for cluster in tqdm(cluster_catalog):
     halo_position["dec"] = dec
     halo_position["z"] = z
 
-    halo_position.param_set_desc("ra", {"lower-bound": float(ra_min), "upper-bound": float(ra_max)})
+    halo_position.param_set_desc(
+        "ra", {"lower-bound": float(ra_min), "upper-bound": float(ra_max)}
+    )
     halo_position.param_set_desc(
         "dec", {"lower-bound": float(dec_min), "upper-bound": float(dec_max)}
     )
@@ -305,12 +309,25 @@ for cluster in tqdm(cluster_catalog):
         )
         cut_shear_catalog_dict["z"].append(shear_catalog["photoz_best"][i])
 
-        xv = ncm.Vector.new(len(shear_catalog["P(z)"][i]))
-        yv = ncm.Vector.new(len(shear_catalog["P(z)"][i]))
+        lower_index = 0
+        upper_index = len(shear_catalog["P(z)"][i]) - 1
 
         for j in range(len(shear_catalog["P(z)"][i])):
-            xv.set(j, pz_bins[j][0])
-            yv.set(j, shear_catalog["P(z)"][i][j])
+            if shear_catalog["P(z)"][i][j] > 0.0:
+                lower_index = j
+                break
+
+        for j in range(len(shear_catalog["P(z)"][i]) - 1, -1, -1):
+            if shear_catalog["P(z)"][i][j] > 0.0:
+                upper_index = j
+                break
+
+        xv = ncm.Vector.new(upper_index - lower_index + 1)
+        yv = ncm.Vector.new(upper_index - lower_index + 1)
+
+        for j in range(0, upper_index - lower_index + 1):
+            xv.set(j, np.array(pz_bins["BINS"])[j + lower_index])
+            yv.set(j, shear_catalog["P(z)"][i][j + lower_index])
 
         pz_spline = ncm.SplineCubicNotaknot.new_full(xv, yv, True)
 
