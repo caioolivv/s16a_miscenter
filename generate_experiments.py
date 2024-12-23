@@ -266,10 +266,14 @@ for cluster in tqdm(cluster_catalog):
     halo_position["z"] = z
 
     halo_position.param_set_desc(
-        "ra", {"lower-bound": float(ra_min), "upper-bound": float(ra_max)}
+        "ra",
+        {
+            "lower-bound": float(ra) - 0.8 / np.cos(np.radians(dec)),
+            "upper-bound": float(ra) + 0.8 / np.cos(np.radians(dec)),
+        },
     )
     halo_position.param_set_desc(
-        "dec", {"lower-bound": float(dec_min), "upper-bound": float(dec_max)}
+        "dec", {"lower-bound": float(dec) - 0.8, "upper-bound": float(dec) + 0.8}
     )
 
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
