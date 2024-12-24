@@ -172,6 +172,13 @@ for cluster in tqdm(cluster_catalog):
     )
     dataset = ncm.Dataset.new_array([data_cluster])
     likelihood = ncm.Likelihood.new(dataset)
+    ra_prior = ncm.PriorGaussParam.new_name(
+        "NcHaloPosition:ra", ra, float(0.05 / np.cos(np.radians(dec)))
+    )
+    dec_prior = ncm.PriorGaussParam.new_name("NcHaloPosition:dec", dec, 0.05)
+
+    likelihood.priors_add(ra_prior)
+    likelihood.priors_add(dec_prior)
     fit = ncm.Fit.factory(
         ncm.FitType.NLOPT,
         "ln-neldermead",
@@ -272,12 +279,12 @@ for cluster in tqdm(cluster_catalog):
     halo_position.param_set_desc(
         "ra",
         {
-            "lower-bound": float(ra - 0.8 / np.cos(np.radians(dec))),
-            "upper-bound": float(ra + 0.8 / np.cos(np.radians(dec))),
+            "lower-bound": float(ra - 0.08 / np.cos(np.radians(dec))),
+            "upper-bound": float(ra + 0.08 / np.cos(np.radians(dec))),
         },
     )
     halo_position.param_set_desc(
-        "dec", {"lower-bound": float(dec - 0.8), "upper-bound": float(dec + 0.8)}
+        "dec", {"lower-bound": float(dec - 0.08), "upper-bound": float(dec + 0.08)}
     )
 
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
@@ -374,6 +381,14 @@ for cluster in tqdm(cluster_catalog):
     )
     dataset = ncm.Dataset.new_array([data_cluster])
     likelihood = ncm.Likelihood.new(dataset)
+    ra_prior = ncm.PriorGaussParam.new_name(
+        "NcHaloPosition:ra", ra, float(0.05 / np.cos(np.radians(dec)))
+    )
+    dec_prior = ncm.PriorGaussParam.new_name("NcHaloPosition:dec", dec, 0.05)
+
+    likelihood.priors_add(ra_prior)
+    likelihood.priors_add(dec_prior)
+
     fit = ncm.Fit.factory(
         ncm.FitType.NLOPT,
         "ln-neldermead",
