@@ -6,6 +6,7 @@ from numcosmo_py import ncm
 import numpy as np
 from astropy.table import Table
 from tqdm import tqdm
+from scipy.optimize import fsolve
 
 __name__ = "NcContext"
 
@@ -17,7 +18,6 @@ cluster_catalog = Table.read("hamana_clusters.fits")
 pz_bins = Table.read("pz/s16a_frankenz_bins.fits")
 
 # Define the radius cuts in Mpc
-min_radius = 0.3
 max_radius = 3.0
 
 
@@ -74,14 +74,30 @@ for cluster in tqdm(cluster_catalog):
 
     ra = cluster["ra"]
     dec = cluster["dec"]
-    z = cluster["z_cluster"]
-    log10mass = np.log10(cluster["m200_wmap"])
+    z = cluster["z"]
+    log10mass = cluster["log10M200_wmap"]
     c = cluster["c200_wmap"]
 
-    ra_min = ra - 0.2 / np.cos(np.radians(dec))
-    ra_max = ra + 0.2 / np.cos(np.radians(dec))
-    dec_min = dec - 0.2
-    dec_max = dec + 0.2
+    halo_position["ra"] = ra
+    halo_position["dec"] = dec
+    halo_position["z"] = z
+
+    sep_Mpc = halo_position.projected_radius_from_ra_dec(
+        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
+    )
+
+    half_box_side = abs(
+        fsolve(
+            lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
+            - (max_radius + sep_Mpc),
+            0.6,
+        )[0]
+    )
+
+    ra_min = ra - half_box_side / np.cos(np.radians(dec))
+    ra_max = ra + half_box_side / np.cos(np.radians(dec))
+    dec_min = dec - half_box_side
+    dec_max = dec + half_box_side
 
     if not isinstance(c, np.float64):
         c = 4.0
@@ -89,19 +105,21 @@ for cluster in tqdm(cluster_catalog):
     halo_mass_summary["log10MDelta"] = log10mass
     halo_mass_summary["cDelta"] = c
 
-    halo_position["ra"] = ra
-    halo_position["dec"] = dec
-    halo_position["z"] = z
+    sep = max(cluster["sep"], 0.01)
 
     halo_position.param_set_desc(
         "ra",
         {
-            "lower-bound": float(ra - 0.8 / np.cos(np.radians(dec))),
-            "upper-bound": float(ra + 0.8 / np.cos(np.radians(dec))),
+            "lower-bound": float(ra - sep * 1.2 / np.cos(np.radians(dec))),
+            "upper-bound": float(ra + sep * 1.2 / np.cos(np.radians(dec))),
         },
     )
     halo_position.param_set_desc(
-        "dec", {"lower-bound": float(dec - 0.8), "upper-bound": float(dec + 0.8)}
+        "dec",
+        {
+            "lower-bound": float(dec - sep * 1.2),
+            "upper-bound": float(dec + sep * 1.2),
+        },
     )
 
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
@@ -123,8 +141,11 @@ for cluster in tqdm(cluster_catalog):
         radius = halo_position.projected_radius_from_ra_dec(
             cosmo, shear_catalog["ira"][i], shear_catalog["idec"][i]
         )
+        sep_Mpc = halo_position.projected_radius_from_ra_dec(
+            cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
+        )
 
-        if radius > max_radius or radius < min_radius:
+        if radius > max_radius + sep_Mpc:
             continue
 
         cut_shear_catalog_dict["ra"].append(shear_catalog["ira"][i])
@@ -155,8 +176,6 @@ for cluster in tqdm(cluster_catalog):
 
     data_cluster = nc.DataClusterWL.new()
     data_cluster.set_obs(wl_obs)
-    data_cluster.set_prec(1e-5)
-    data_cluster.set_cut(min_radius, max_radius)
     data_cluster.set_init(True)
 
     mset = ncm.MSet.new_array(
@@ -173,9 +192,11 @@ for cluster in tqdm(cluster_catalog):
     dataset = ncm.Dataset.new_array([data_cluster])
     likelihood = ncm.Likelihood.new(dataset)
     ra_prior = ncm.PriorGaussParam.new_name(
-        "NcHaloPosition:ra", ra, float(0.05 / np.cos(np.radians(dec)))
+        "NcHaloPosition:ra", ra, float(sep * 0.5 / np.cos(np.radians(dec)))
     )
-    dec_prior = ncm.PriorGaussParam.new_name("NcHaloPosition:dec", dec, 0.05)
+    dec_prior = ncm.PriorGaussParam.new_name(
+        "NcHaloPosition:dec", dec, float(sep * 0.5)
+    )
 
     likelihood.priors_add(ra_prior)
     likelihood.priors_add(dec_prior)
@@ -257,14 +278,30 @@ for cluster in tqdm(cluster_catalog):
 
     ra = cluster["ra"]
     dec = cluster["dec"]
-    z = cluster["z_cluster"]
-    log10mass = np.log10(cluster["m200_wmap"])
+    z = cluster["z"]
+    log10mass = cluster["log10M200_wmap"]
     c = cluster["c200_wmap"]
 
-    ra_min = ra - 0.2 / np.cos(np.radians(dec))
-    ra_max = ra + 0.2 / np.cos(np.radians(dec))
-    dec_min = dec - 0.2
-    dec_max = dec + 0.2
+    halo_position["ra"] = ra
+    halo_position["dec"] = dec
+    halo_position["z"] = z
+
+    sep_Mpc = halo_position.projected_radius_from_ra_dec(
+        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
+    )
+
+    half_box_side = abs(
+        fsolve(
+            lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
+            - (max_radius + sep_Mpc),
+            0.6,
+        )[0]
+    )
+
+    ra_min = ra - half_box_side / np.cos(np.radians(dec))
+    ra_max = ra + half_box_side / np.cos(np.radians(dec))
+    dec_min = dec - half_box_side
+    dec_max = dec + half_box_side
 
     if not isinstance(c, np.float64):
         c = 4.0
@@ -276,15 +313,21 @@ for cluster in tqdm(cluster_catalog):
     halo_position["dec"] = dec
     halo_position["z"] = z
 
+    sep = max(cluster["sep"], 0.01)
+
     halo_position.param_set_desc(
         "ra",
         {
-            "lower-bound": float(ra - 0.08 / np.cos(np.radians(dec))),
-            "upper-bound": float(ra + 0.08 / np.cos(np.radians(dec))),
+            "lower-bound": float(ra - sep * 1.2 / np.cos(np.radians(dec))),
+            "upper-bound": float(ra + sep * 1.2 / np.cos(np.radians(dec))),
         },
     )
     halo_position.param_set_desc(
-        "dec", {"lower-bound": float(dec - 0.08), "upper-bound": float(dec + 0.08)}
+        "dec",
+        {
+            "lower-bound": float(dec - sep * 1.2),
+            "upper-bound": float(dec + sep * 1.2),
+        },
     )
 
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
@@ -306,8 +349,11 @@ for cluster in tqdm(cluster_catalog):
         radius = halo_position.projected_radius_from_ra_dec(
             cosmo, shear_catalog["ira"][i], shear_catalog["idec"][i]
         )
+        sep_Mpc = halo_position.projected_radius_from_ra_dec(
+            cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
+        )
 
-        if radius > max_radius or radius < min_radius:
+        if radius > max_radius + sep_Mpc:
             continue
 
         cut_shear_catalog_dict["ra"].append(shear_catalog["ira"][i])
@@ -364,8 +410,6 @@ for cluster in tqdm(cluster_catalog):
 
     data_cluster = nc.DataClusterWL.new()
     data_cluster.set_obs(wl_obs)
-    data_cluster.set_prec(1e-5)
-    data_cluster.set_cut(min_radius, max_radius)
     data_cluster.set_init(True)
 
     mset = ncm.MSet.new_array(
@@ -382,9 +426,11 @@ for cluster in tqdm(cluster_catalog):
     dataset = ncm.Dataset.new_array([data_cluster])
     likelihood = ncm.Likelihood.new(dataset)
     ra_prior = ncm.PriorGaussParam.new_name(
-        "NcHaloPosition:ra", ra, float(0.05 / np.cos(np.radians(dec)))
+        "NcHaloPosition:ra", ra, float(sep * 0.5 / np.cos(np.radians(dec)))
     )
-    dec_prior = ncm.PriorGaussParam.new_name("NcHaloPosition:dec", dec, 0.05)
+    dec_prior = ncm.PriorGaussParam.new_name(
+        "NcHaloPosition:dec", dec, float(sep * 0.5)
+    )
 
     likelihood.priors_add(ra_prior)
     likelihood.priors_add(dec_prior)
