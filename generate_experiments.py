@@ -105,7 +105,7 @@ for cluster in tqdm(cluster_catalog):
     halo_mass_summary["log10MDelta"] = log10mass
     halo_mass_summary["cDelta"] = c
 
-    sep = max(cluster["sep"], 0.01)
+    sep = max(cluster["sep"], 0.001)
 
     halo_position.param_set_desc(
         "ra",
@@ -200,13 +200,6 @@ for cluster in tqdm(cluster_catalog):
 
     likelihood.priors_add(ra_prior)
     likelihood.priors_add(dec_prior)
-    fit = ncm.Fit.factory(
-        ncm.FitType.NLOPT,
-        "ln-neldermead",
-        likelihood,
-        mset,
-        ncm.FitGradType.NUMDIFF_FORWARD,
-    )
 
     mset.prepare_fparam_map()
 
@@ -313,7 +306,7 @@ for cluster in tqdm(cluster_catalog):
     halo_position["dec"] = dec
     halo_position["z"] = z
 
-    sep = max(cluster["sep"], 0.01)
+    sep = max(cluster["sep"], 0.001)
 
     halo_position.param_set_desc(
         "ra",
@@ -434,14 +427,6 @@ for cluster in tqdm(cluster_catalog):
 
     likelihood.priors_add(ra_prior)
     likelihood.priors_add(dec_prior)
-
-    fit = ncm.Fit.factory(
-        ncm.FitType.NLOPT,
-        "ln-neldermead",
-        likelihood,
-        mset,
-        ncm.FitGradType.NUMDIFF_FORWARD,
-    )
 
     mset.prepare_fparam_map()
 
