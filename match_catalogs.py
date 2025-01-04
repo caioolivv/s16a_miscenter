@@ -67,7 +67,7 @@ for cluster in tqdm(cluster_catalog):
     halo_position["z"] = z
 
     half_box_side = fsolve(
-        lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep / 2)
+        lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
         - 5.0,
         0.5,
     )[0]
