@@ -16,8 +16,8 @@ ncm.cfg_set_log_handler(lambda msg: sys.stdout.write(msg) and sys.stdout.flush()
 
 # # Load the cluster and shear catalogs
 #
-# You may choose different cluster catalogs, but be sure that they have the columns: `name`, `ra`,
-# and `dec` (you may have to adjust the case of these column names).
+# You may choose different cluster catalogs, but be sure that they have the columns: `wl_name`,
+# `ra`, and `dec` (you may have to adjust the case of these column names).
 cluster_catalog = Table.read("hamana_clusters.fits")
 shear_catalog = Table.read("s16a_shear_catalog.fits")
 
@@ -67,7 +67,7 @@ for cluster in tqdm(cluster_catalog):
     halo_position["z"] = z
 
     half_box_side = fsolve(
-        lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
+        lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep / 2)
         - 5.0,
         0.5,
     )[0]
@@ -90,10 +90,10 @@ for cluster in tqdm(cluster_catalog):
 
     cluster_shear_catalog = join(pz_catalog, cluster_shear_catalog, keys="object_id")
 
-    if not os.path.exists(f"clusters/{cluster['name']}"):
-        os.makedirs(f"clusters/{cluster['name']}")
+    if not os.path.exists(f"clusters/{cluster['wl_name']}"):
+        os.makedirs(f"clusters/{cluster['wl_name']}")
 
     cluster_shear_catalog.write(
-        f"clusters/{cluster['name']}/{cluster['name']}_raw_shear_catalog.fits",
+        f"clusters/{cluster['wl_name']}/{cluster['wl_name']}_raw_shear_catalog.fits",
         overwrite=True,
     )

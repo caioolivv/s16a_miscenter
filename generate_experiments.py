@@ -83,7 +83,7 @@ for cluster in tqdm(cluster_catalog):
     halo_position["z"] = z
 
     sep_Mpc = halo_position.projected_radius_from_ra_dec(
-        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
+        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"] / 2
     )
 
     half_box_side = abs(
@@ -105,20 +105,26 @@ for cluster in tqdm(cluster_catalog):
     halo_mass_summary["log10MDelta"] = log10mass
     halo_mass_summary["cDelta"] = c
 
-    sep = max(cluster["sep"], 0.001)
+    side = abs(
+        fsolve(
+            lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
+            - 0.4,
+            0.6,
+        )[0]
+    )
 
     halo_position.param_set_desc(
         "ra",
         {
-            "lower-bound": float(ra - sep * 1.2 / np.cos(np.radians(dec))),
-            "upper-bound": float(ra + sep * 1.2 / np.cos(np.radians(dec))),
+            "lower-bound": float(ra - side / np.cos(np.radians(dec))),
+            "upper-bound": float(ra + side / np.cos(np.radians(dec))),
         },
     )
     halo_position.param_set_desc(
         "dec",
         {
-            "lower-bound": float(dec - sep * 1.2),
-            "upper-bound": float(dec + sep * 1.2),
+            "lower-bound": float(dec - side),
+            "upper-bound": float(dec + side),
         },
     )
 
@@ -132,7 +138,7 @@ for cluster in tqdm(cluster_catalog):
     s_data = nc.GalaxySDShapeData.new(galaxy_shape, p_data)
 
     shear_catalog = Table.read(
-        f"clusters/{cluster["name"]}/{cluster["name"]}_shear_catalog.fits"
+        f"clusters/{cluster['wl_name']}/{cluster['wl_name']}_shear_catalog.fits"
     )
 
     cut_shear_catalog_dict = {col: [] for col in s_data.required_columns()}
@@ -191,6 +197,9 @@ for cluster in tqdm(cluster_catalog):
     )
     dataset = ncm.Dataset.new_array([data_cluster])
     likelihood = ncm.Likelihood.new(dataset)
+
+    sep = max(cluster["sep"], 0.001)
+
     ra_prior = ncm.PriorGaussParam.new_name(
         "NcHaloPosition:ra", ra, float(sep * 0.5 / np.cos(np.radians(dec)))
     )
@@ -211,10 +220,12 @@ for cluster in tqdm(cluster_catalog):
     ser = ncm.Serialize.new(ncm.SerializeOpt.CLEAN_DUP)
 
     ser.to_binfile(
-        dataset, f"clusters/{cluster["name"]}/{cluster["name"]}_experiment.dataset.gvar"
+        dataset,
+        f"clusters/{cluster['wl_name']}/{cluster['wl_name']}_experiment.dataset.gvar",
     )
     ser.dict_str_to_yaml_file(
-        experiment, f"clusters/{cluster["name"]}/{cluster["name"]}_experiment.yaml"
+        experiment,
+        f"clusters/{cluster['wl_name']}/{cluster['wl_name']}_experiment.yaml",
     )
 
 
@@ -280,7 +291,7 @@ for cluster in tqdm(cluster_catalog):
     halo_position["z"] = z
 
     sep_Mpc = halo_position.projected_radius_from_ra_dec(
-        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
+        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"] / 2
     )
 
     half_box_side = abs(
@@ -306,20 +317,26 @@ for cluster in tqdm(cluster_catalog):
     halo_position["dec"] = dec
     halo_position["z"] = z
 
-    sep = max(cluster["sep"], 0.001)
+    side = abs(
+        fsolve(
+            lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
+            - 0.4,
+            0.6,
+        )[0]
+    )
 
     halo_position.param_set_desc(
         "ra",
         {
-            "lower-bound": float(ra - sep * 1.2 / np.cos(np.radians(dec))),
-            "upper-bound": float(ra + sep * 1.2 / np.cos(np.radians(dec))),
+            "lower-bound": float(ra - side / np.cos(np.radians(dec))),
+            "upper-bound": float(ra + side / np.cos(np.radians(dec))),
         },
     )
     halo_position.param_set_desc(
         "dec",
         {
-            "lower-bound": float(dec - sep * 1.2),
-            "upper-bound": float(dec + sep * 1.2),
+            "lower-bound": float(dec - side),
+            "upper-bound": float(dec + side),
         },
     )
 
@@ -332,7 +349,7 @@ for cluster in tqdm(cluster_catalog):
     s_data = nc.GalaxySDShapeData.new(galaxy_shape, p_data)
 
     shear_catalog = Table.read(
-        f"clusters/{cluster["name"]}/{cluster["name"]}_shear_catalog_pdf.fits"
+        f"clusters/{cluster['wl_name']}/{cluster['wl_name']}_shear_catalog_pdf.fits"
     )
 
     cut_shear_catalog_dict = {col: [] for col in s_data.required_columns()}
@@ -418,6 +435,9 @@ for cluster in tqdm(cluster_catalog):
     )
     dataset = ncm.Dataset.new_array([data_cluster])
     likelihood = ncm.Likelihood.new(dataset)
+
+    sep = max(cluster["sep"], 0.001)
+
     ra_prior = ncm.PriorGaussParam.new_name(
         "NcHaloPosition:ra", ra, float(sep * 0.5 / np.cos(np.radians(dec)))
     )
@@ -439,8 +459,9 @@ for cluster in tqdm(cluster_catalog):
 
     ser.to_binfile(
         dataset,
-        f"clusters/{cluster["name"]}/{cluster["name"]}_experiment_pdf.dataset.gvar",
+        f"clusters/{cluster['wl_name']}/{cluster['wl_name']}_experiment_pdf.dataset.gvar",
     )
     ser.dict_str_to_yaml_file(
-        experiment, f"clusters/{cluster["name"]}/{cluster["name"]}_experiment_pdf.yaml"
+        experiment,
+        f"clusters/{cluster['wl_name']}/{cluster['wl_name']}_experiment_pdf.yaml",
     )
