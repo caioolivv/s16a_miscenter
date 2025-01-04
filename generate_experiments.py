@@ -83,13 +83,13 @@ for cluster in tqdm(cluster_catalog):
     halo_position["z"] = z
 
     sep_Mpc = halo_position.projected_radius_from_ra_dec(
-        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"] / 2
+        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
     )
 
     half_box_side = abs(
         fsolve(
             lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
-            - (max_radius + sep_Mpc),
+            - (max_radius + sep_Mpc / 2),
             0.6,
         )[0]
     )
@@ -151,7 +151,7 @@ for cluster in tqdm(cluster_catalog):
             cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
         )
 
-        if radius > max_radius + sep_Mpc:
+        if radius > max_radius + sep_Mpc / 2:
             continue
 
         cut_shear_catalog_dict["ra"].append(shear_catalog["ira"][i])
@@ -291,13 +291,13 @@ for cluster in tqdm(cluster_catalog):
     halo_position["z"] = z
 
     sep_Mpc = halo_position.projected_radius_from_ra_dec(
-        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"] / 2
+        cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
     )
 
     half_box_side = abs(
         fsolve(
             lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
-            - (max_radius + sep_Mpc),
+            - (max_radius + sep_Mpc / 2),
             0.6,
         )[0]
     )
@@ -363,7 +363,7 @@ for cluster in tqdm(cluster_catalog):
             cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
         )
 
-        if radius > max_radius + sep_Mpc:
+        if radius > max_radius + sep_Mpc / 2:
             continue
 
         cut_shear_catalog_dict["ra"].append(shear_catalog["ira"][i])
@@ -384,12 +384,12 @@ for cluster in tqdm(cluster_catalog):
         upper_index = len(shear_catalog["P(z)"][i]) - 1
 
         for j in range(len(shear_catalog["P(z)"][i])):
-            if shear_catalog["P(z)"][i][j] > 0.0:
+            if shear_catalog["P(z)"][i][j] / max(shear_catalog["P(z)"][i]) > 1e-3:
                 lower_index = j
                 break
 
         for j in range(len(shear_catalog["P(z)"][i]) - 1, -1, -1):
-            if shear_catalog["P(z)"][i][j] > 0.0:
+            if shear_catalog["P(z)"][i][j] / max(shear_catalog["P(z)"][i]) > 1e-3:
                 upper_index = j
                 break
 
