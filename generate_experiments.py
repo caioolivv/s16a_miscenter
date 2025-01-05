@@ -18,6 +18,7 @@ cluster_catalog = Table.read("hamana_clusters.fits")
 pz_bins = Table.read("pz/s16a_frankenz_bins.fits")
 
 # Define the radius cuts in Mpc
+min_radius = 0.3
 max_radius = 3.0
 
 
@@ -151,7 +152,7 @@ for cluster in tqdm(cluster_catalog):
             cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
         )
 
-        if radius > max_radius + sep_Mpc / 2:
+        if radius > max_radius + sep_Mpc / 2 or radius < min_radius:
             continue
 
         cut_shear_catalog_dict["ra"].append(shear_catalog["ira"][i])
@@ -363,7 +364,7 @@ for cluster in tqdm(cluster_catalog):
             cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
         )
 
-        if radius > max_radius + sep_Mpc / 2:
+        if radius > max_radius + sep_Mpc / 2 or radius < min_radius:
             continue
 
         cut_shear_catalog_dict["ra"].append(shear_catalog["ira"][i])
