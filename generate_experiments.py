@@ -132,7 +132,7 @@ for cluster in tqdm(cluster_catalog):
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
     galaxy_true_redshift = nc.GalaxySDTrueRedshiftLSSTSRD.new()
     galaxy_redshift_obs = nc.GalaxySDObsRedshiftGauss.new(galaxy_true_redshift)
-    galaxy_shape = nc.GalaxySDShapeGauss.new()
+    galaxy_shape = nc.GalaxySDShapeGaussHSC.new()
 
     z_data = nc.GalaxySDObsRedshiftData.new(galaxy_redshift_obs)
     p_data = nc.GalaxySDPositionData.new(galaxy_position, z_data)
@@ -343,7 +343,7 @@ for cluster in tqdm(cluster_catalog):
 
     galaxy_position = nc.GalaxySDPositionFlat.new(ra_min, ra_max, dec_min, dec_max)
     galaxy_redshift_obs = nc.GalaxySDObsRedshiftPz.new()
-    galaxy_shape = nc.GalaxySDShapeGauss.new()
+    galaxy_shape = nc.GalaxySDShapeGaussHSC.new()
 
     z_data = nc.GalaxySDObsRedshiftData.new(galaxy_redshift_obs)
     p_data = nc.GalaxySDPositionData.new(galaxy_position, z_data)
