@@ -23,7 +23,7 @@ from
  s16a_wide.meas2 a
  inner join s16a_wide.weaklensing_hsm_regauss b using (object_id)
  inner join s16a_wide.meas c using (object_id)
- inner join s16a_wide.photoz_frankenz d using (object_id)
+ inner join s16a_wide.photoz_nnpz d using (object_id)
  inner join s16a_wide.forced e using (object_id)
 ```
 
@@ -32,7 +32,7 @@ You must place the catalog on the root of this repository and name it `s16a_shea
 See [Mandelbaum 2018](https://ui.adsabs.harvard.edu/abs/2018PASJ...70S..25M/abstract) for more information on the catalog.
 
 
-## Getting the s16a frankenz P(z) catalog
+## Getting the s16a nnpz P(z) catalog
 
 To get the s16a photo-z pdf data, we need to download the fits files for each of the tracts and fields from their [file system](https://hsc-release.mtk.nao.ac.jp/archive/filetree/s16a-shape-catalog/Sirius/). We also need to download the redshift bins definitions from there. To download the wanted `nnpz` P(z), we run the notebook `scrape_pz.ipynb`. Remember to add your credentials in the notebook.
 
