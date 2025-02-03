@@ -14,21 +14,9 @@ __name__ = "NcContext"
 ncm.cfg_init()
 ncm.cfg_set_log_handler(lambda msg: sys.stdout.write(msg) and sys.stdout.flush())
 
-# # Load the cluster and shear catalogs
-#
-# You may choose different cluster catalogs, but be sure that they have the columns: `wl_name`,
-# `ra`, and `dec` (you may have to adjust the case of these column names).
 cluster_catalog = Table.read("hamana_clusters.fits")
 shear_catalog = Table.read("s16a_shear_catalog.fits")
 
-
-# # Create individual shear catalogs for each cluster
-#
-# We create a directory `clusters` and inside of it create a new `cluster_name` directory for each
-# cluster. Each directory then holds the `fits` file with the raw individual shear catalog. These
-# are created by selecting all galaxies within a square of 0.4 degrees centered on the cluster
-# coordinates. Then we select the pz catalogs for the present tracts and join the shear and pz
-# catalogs using the `object_id` column.
 if not os.path.exists("clusters"):
     os.makedirs("clusters")
 
