@@ -34,7 +34,7 @@ See [Mandelbaum 2018](https://ui.adsabs.harvard.edu/abs/2018PASJ...70S..25M/abst
 
 ## Getting the s16a frankenz P(z) catalog
 
-To get the s16a photo-z pdf data, we need to download the fits files for each of the tracts and fields from their [file system](https://hsc-release.mtk.nao.ac.jp/archive/filetree/s16a-shape-catalog/Sirius/). We also need to download the redshift bins definitions from there. To download the wanted `frankenz` P(z), we run the notebook `scrape_pz.ipynb`. Remember to add your credentials in the notebook.
+To get the s16a photo-z pdf data, we need to download the fits files for each of the tracts and fields from their [file system](https://hsc-release.mtk.nao.ac.jp/archive/filetree/s16a-shape-catalog/Sirius/). We also need to download the redshift bins definitions from there. To download the wanted `nnpz` P(z), we run the notebook `scrape_pz.ipynb`. Remember to add your credentials in the notebook.
 
 
 ## Matching the shear and cluster catalogs
