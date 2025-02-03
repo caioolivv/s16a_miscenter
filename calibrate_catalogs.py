@@ -1,15 +1,9 @@
 # # Setup libraries
 import os
 import numpy as np
-from astropy.table import Table, join, vstack
-from tqdm import tqdm
+from astropy.table import Table
 
 
-# # Cleaning and calibration functions
-#
-# These functions follow the cuts and calibration defined in Mandelbaum 2017. The code for them was taken from [CLMM's](https://github.com/LSSTDESC/CLMM) `Example4_Fit_Halo_mass_to_HSC_data.ipynb`. All credit belongs to the original authors.
-#
-# Observation: the cut based on `photoz_risk_best` is not done for P(z) pdf catalog.
 def make_cuts(catalog_in, is_pdf):
     # We consider some cuts in Mandelbaum et al. 2018 (HSC SSP Y1 shear catalog).
     select = catalog_in["detect_is_primary"] == True
@@ -27,8 +21,7 @@ def make_cuts(catalog_in, is_pdf):
         catalog_in["ishape_hsm_regauss_resolution"] >= 0.3
     )  # similar to extendedness
     select &= catalog_in["ishape_hsm_regauss_sigma"] <= 0.4
-    # Note "zbest" minimizes the risk of the photo-z point estimate being far away from the true value.
-    # Details: https://hsc-release.mtk.nao.ac.jp/doc/wp-content/uploads/2017/02/pdr1_photoz_release_note.pdf
+
     if not is_pdf:
         select &= catalog_in["photoz_risk_best"] < 0.5
 
@@ -37,8 +30,6 @@ def make_cuts(catalog_in, is_pdf):
     return catalog_out
 
 
-# Reference: Mandelbaum et al. 2018 "The first-year shear catalog of the Subaru Hyper Suprime-Cam Subaru Strategic Program Survey".
-# Section A.3.2: "per-object galaxy shear estimate".
 def apply_shear_calibration(catalog_in):
     e1_0 = catalog_in["ishape_hsm_regauss_e1"]
     e2_0 = catalog_in["ishape_hsm_regauss_e2"]
