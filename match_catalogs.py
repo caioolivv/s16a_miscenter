@@ -54,11 +54,13 @@ for cluster in tqdm(cluster_catalog):
     halo_position["dec"] = dec
     halo_position["z"] = z
 
-    half_box_side = fsolve(
-        lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
-        - 5.0,
-        0.5,
-    )[0]
+    half_box_side = abs(
+        fsolve(
+            lambda sep: halo_position.projected_radius_from_ra_dec(cosmo, ra, dec + sep)
+            - 5.0,
+            0.5,
+        )[0]
+    )
 
     cluster_shear_catalog = shear_catalog[
         (np.abs(shear_catalog["ira"] - ra) < half_box_side / np.cos(np.radians(dec)))
