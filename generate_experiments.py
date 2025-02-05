@@ -13,25 +13,10 @@ __name__ = "NcContext"
 ncm.cfg_init()
 ncm.cfg_set_log_handler(lambda msg: sys.stdout.write(msg) and sys.stdout.flush())
 
-# ## Load cluster catalog and bin definitions
 cluster_catalog = Table.read("hamana_clusters.fits")
-pz_bins = Table.read("pz/s16a_frankenz_bins.fits")
+pz_bins = Table.read("pz/s16a_pz_pdf_bins.fits")
 
-# Define the radius cuts in Mpc
-min_radius = 0.3
-max_radius = 3.0
-
-
-# ## Create `data_cluster_wl` and `likelihood` objects (Gauss)
-#
-# Here we create the NumCosmo objects necessary for mass fitting using Gaussian error for photo-z.
-# These are then serialized into experiment files which can either be loaded by and used by custom
-# python scripts or by the numcosmo CLI app.
 for cluster in tqdm(cluster_catalog):
-    # ## Setup Model Set
-    #
-    # Here we generate the model set used for the analysis of the clusters.
-    # We define the cosmology using the WMAP Year 9 results.
     cosmo = nc.HICosmoDEXcdm()
 
     cosmo.params_set_default_ftype()
@@ -59,6 +44,9 @@ for cluster in tqdm(cluster_catalog):
 
     cosmo.add_submodel(prim)
     cosmo.add_submodel(reion)
+
+    min_radius = 0.3 * cosmo.h()
+    max_radius = 3.0 * cosmo.h()
 
     dist = nc.Distance.new(6.0)
     halo_mass_summary = nc.HaloCMParam.new(nc.HaloMassSummaryMassDef.CRITICAL, 200.0)
@@ -152,7 +140,7 @@ for cluster in tqdm(cluster_catalog):
             cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
         )
 
-        if radius > max_radius + sep_Mpc / 2 or radius < min_radius:
+        if radius > max_radius or radius < min_radius:
             continue
 
         cut_shear_catalog_dict["ra"].append(shear_catalog["ira"][i])
@@ -199,18 +187,6 @@ for cluster in tqdm(cluster_catalog):
     dataset = ncm.Dataset.new_array([data_cluster])
     likelihood = ncm.Likelihood.new(dataset)
 
-    sep = max(cluster["sep"], 0.001)
-
-    ra_prior = ncm.PriorGaussParam.new_name(
-        "NcHaloPosition:ra", ra, float(sep * 0.5 / np.cos(np.radians(dec)))
-    )
-    dec_prior = ncm.PriorGaussParam.new_name(
-        "NcHaloPosition:dec", dec, float(sep * 0.5)
-    )
-
-    likelihood.priors_add(ra_prior)
-    likelihood.priors_add(dec_prior)
-
     mset.prepare_fparam_map()
 
     experiment = ncm.ObjDictStr()
@@ -230,16 +206,7 @@ for cluster in tqdm(cluster_catalog):
     )
 
 
-# ## Create `data_cluster_wl` and `likelihood` objects (PDF)
-#
-# Here we create the NumCosmo objects necessary for mass fitting using the full photo-z pdf.
-# These are then serialized into experiment files which can either be loaded by and used
-# by custom python scripts or by the numcosmo CLI app.
 for cluster in tqdm(cluster_catalog):
-    # ## Setup Model Set
-    #
-    # Here we generate the model set used for the analysis of the clusters.
-    # We define the cosmology using the WMAP Year 9 results.
     cosmo = nc.HICosmoDEXcdm()
 
     cosmo.params_set_default_ftype()
@@ -267,6 +234,9 @@ for cluster in tqdm(cluster_catalog):
 
     cosmo.add_submodel(prim)
     cosmo.add_submodel(reion)
+
+    min_radius = 0.3 * cosmo.h()
+    max_radius = 3.0 * cosmo.h()
 
     dist = nc.Distance.new(6.0)
     halo_mass_summary = nc.HaloCMParam.new(nc.HaloMassSummaryMassDef.CRITICAL, 200.0)
@@ -364,7 +334,7 @@ for cluster in tqdm(cluster_catalog):
             cosmo, cluster["ra"], cluster["dec"] + cluster["sep"]
         )
 
-        if radius > max_radius + sep_Mpc / 2 or radius < min_radius:
+        if radius > max_radius or radius < min_radius:
             continue
 
         cut_shear_catalog_dict["ra"].append(shear_catalog["ira"][i])
@@ -403,6 +373,15 @@ for cluster in tqdm(cluster_catalog):
 
         pz_spline = ncm.SplineCubicNotaknot.new_full(xv, yv, True)
 
+        pz_spline.prepare()
+
+        norm = pz_spline.eval_integ(xv.get(0), xv.get(xv.len() - 1))
+
+        for j in range(0, yv.len()):
+            yv.set(j, yv.get(j) / norm)
+
+        pz_spline.prepare()
+
         cut_shear_catalog_dict["pz"].append(pz_spline)
 
     wl_obs = nc.GalaxyWLObs.new(
@@ -436,18 +415,6 @@ for cluster in tqdm(cluster_catalog):
     )
     dataset = ncm.Dataset.new_array([data_cluster])
     likelihood = ncm.Likelihood.new(dataset)
-
-    sep = max(cluster["sep"], 0.001)
-
-    ra_prior = ncm.PriorGaussParam.new_name(
-        "NcHaloPosition:ra", ra, float(sep * 0.5 / np.cos(np.radians(dec)))
-    )
-    dec_prior = ncm.PriorGaussParam.new_name(
-        "NcHaloPosition:dec", dec, float(sep * 0.5)
-    )
-
-    likelihood.priors_add(ra_prior)
-    likelihood.priors_add(dec_prior)
 
     mset.prepare_fparam_map()
 
